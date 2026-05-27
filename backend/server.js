@@ -29,17 +29,19 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/expense_tracker';
 
-console.log('Connecting to MongoDB at:', MONGO_URI);
+// Start the HTTP server first so Render's health check passes
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Backend server is running on port ${PORT}`);
+});
 
+// Then connect to MongoDB
+console.log('Connecting to MongoDB...');
 mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log('Successfully connected to MongoDB Database.');
-    app.listen(PORT, () => {
-      console.log(`Backend server is running on port ${PORT}`);
-    });
   })
   .catch((err) => {
     console.error('MongoDB database connection failed:', err.message);
-    process.exit(1);
   });
+

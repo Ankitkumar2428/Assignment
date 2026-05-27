@@ -3,13 +3,10 @@ services:
   - type: web
     name: spendwise-backend
     runtime: node
-    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: PORT
-        value: "5000"
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
