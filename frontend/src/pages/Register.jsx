@@ -30,40 +30,33 @@ const Register = ({ onNavigateToLogin, API_URL }) => {
     }
 
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim().toLowerCase(),
-          password,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), password }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       const text = await response.text();
       let data = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        throw new Error('Server returned an invalid response. The backend may be starting up — please wait 30 seconds and try again.');
+      try { data = text ? JSON.parse(text) : {}; } catch { 
+        throw new Error('Invalid server response. Try again in 30 seconds.');
       }
+      if (!response.ok) throw new Error(data.message || 'Registration failed.');
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed. Please try again.');
-      }
-
-      setSuccess('Account created successfully! Redirecting to login...');
-      
-      // Auto redirect to login page after 2 seconds
-      setTimeout(() => {
-        onNavigateToLogin();
-      }, 2000);
-
+      setSuccess('Account created! Redirecting to login...');
+      setTimeout(() => onNavigateToLogin(), 2000);
     } catch (err) {
-      setError(err.message || 'Network error, please try again.');
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The backend is waking up — please wait 30 seconds and try again.');
+      } else {
+        setError(err.message || 'Network error, please try again.');
+      }
     } finally {
       setLoading(false);
     }

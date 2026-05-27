@@ -16,35 +16,34 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
     }
 
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       const text = await response.text();
       let data = {};
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch {
-        throw new Error('Server returned an invalid response. The backend may be starting up — please wait 30 seconds and try again.');
+      try { data = text ? JSON.parse(text) : {}; } catch {
+        throw new Error('Invalid server response. Try again in 30 seconds.');
       }
+      if (!response.ok) throw new Error(data.message || 'Login failed. Please check your credentials.');
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please check your credentials.');
-      }
-
-      // Store token & user details in localStorage (fulfills Part C Requirement)
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Callback to update application state
       onLoginSuccess(data.token, data.user);
     } catch (err) {
-      setError(err.message || 'Network error, please try again.');
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. The backend is waking up — please wait 30 seconds and try again.');
+      } else {
+        setError(err.message || 'Network error, please try again.');
+      }
     } finally {
       setLoading(false);
     }
