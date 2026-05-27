@@ -4,9 +4,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
-// Dynamically resolve API URL for Render deployment, falling back to localhost
-let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-// Render's fromService property:host returns just the hostname (no protocol)
+// In production VITE_API_URL is set by render.yaml at build time.
+// Fallback to the known Render backend URL if the env var is missing.
+const RENDER_BACKEND = 'https://spendwise-backend.onrender.com';
+let rawUrl = import.meta.env.VITE_API_URL || RENDER_BACKEND;
 if (rawUrl && !rawUrl.startsWith('http')) {
   rawUrl = `https://${rawUrl}`;
 }
