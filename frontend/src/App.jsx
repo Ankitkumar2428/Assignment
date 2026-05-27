@@ -12,6 +12,8 @@ if (rawUrl && !rawUrl.startsWith('http')) {
   rawUrl = `https://${rawUrl}`;
 }
 const API_URL = `${rawUrl.replace(/\/$/, '')}/api`;
+console.log("SpendWise API URL initialized to:", API_URL);
+
 
 
 function App() {
