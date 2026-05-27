@@ -5,6 +5,33 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Connection Status Tracker
+  const [connectionStatus, setConnectionStatus] = useState('Checking...');
+  const [connectionColor, setConnectionColor] = useState('#f59e0b'); // orange
+
+  React.useEffect(() => {
+    const testConnection = async () => {
+      // Extract root backend URL from API_URL (replace /api with /health)
+      const rootUrl = API_URL.replace(/\/api$/, '');
+      try {
+        const res = await fetch(`${rootUrl}/health`);
+        const data = await res.json();
+        if (data.status === 'ok' && data.db === 'connected') {
+          setConnectionStatus('Backend Connected & Database Ready');
+          setConnectionColor('#10b981'); // green
+        } else {
+          setConnectionStatus(`Backend Active, DB: ${data.db || 'offline'}`);
+          setConnectionColor('#ef4444'); // red
+        }
+      } catch (err) {
+        setConnectionStatus(`Connection Error: ${err.message || 'Cannot reach server'}`);
+        setConnectionColor('#ef4444'); // red
+      }
+    };
+    testConnection();
+  }, [API_URL]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,6 +82,20 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
         <div className="auth-header">
           <h2>Welcome Back</h2>
           <p>Login to securely manage your daily expenses</p>
+          <div style={{
+            marginTop: '0.75rem',
+            padding: '0.4rem 0.8rem',
+            borderRadius: '6px',
+            fontSize: '0.8rem',
+            fontWeight: '600',
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            color: connectionColor,
+            border: `1px solid ${connectionColor}44`,
+            display: 'inline-block',
+            textAlign: 'center'
+          }}>
+            🔌 {connectionStatus}
+          </div>
         </div>
 
         {error && <div className="alert alert-danger">{error}</div>}
