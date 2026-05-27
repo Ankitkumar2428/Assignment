@@ -25,7 +25,13 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error('Server returned an invalid response. The backend may be starting up — please wait 30 seconds and try again.');
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed. Please check your credentials.');

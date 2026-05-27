@@ -12,8 +12,16 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS — allow Render frontend and local dev
+app.use(cors({
+  origin: [
+    /\.onrender\.com$/,
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Routes Mounting
