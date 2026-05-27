@@ -1,36 +1,32 @@
 services:
-  # Backend Web Service
+  # Backend Node.js Web Service
   - type: web
     name: spendwise-backend
-    env: node
+    runtime: node
     plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: PORT
-        value: 5000
+        value: "5000"
       - key: MONGO_URI
-        sync: false # User will paste their MongoDB Atlas Connection URI here
-        placeholder: "mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/expense_tracker?retryWrites=true&w=majority"
+        sync: false
       - key: JWT_SECRET
-        generateValue: true # Render will auto-generate a secure cryptographically random key!
+        generateValue: true
 
-  # Frontend Static Site
+  # Frontend React Static Site
   - type: web
     name: spendwise-frontend
-    env: static
+    runtime: static
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishDir: dist
-    headers:
-      - key: Cache-Control
-        value: no-cache
+    staticPublishPath: dist
     routes:
       - type: rewrite
-        src: /*
-        dest: /index.html
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         fromService:
