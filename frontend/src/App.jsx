@@ -5,10 +5,12 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
 // Dynamically resolve API URL for Render deployment, falling back to localhost
-let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-if (API_URL && !API_URL.endsWith('/api') && API_URL.startsWith('http')) {
-  API_URL = `${API_URL.replace(/\/$/, '')}/api`;
+let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Render's fromService property:host returns just the hostname (no protocol)
+if (rawUrl && !rawUrl.startsWith('http')) {
+  rawUrl = `https://${rawUrl}`;
 }
+const API_URL = `${rawUrl.replace(/\/$/, '')}/api`;
 
 
 function App() {
