@@ -12,26 +12,32 @@ dotenv.config();
 
 const app = express();
 
-// CORS — allow Render frontend and local dev
-app.use(cors({
-  origin: [
-    /\.onrender\.com$/,
-    'http://localhost:5173',
-    'http://localhost:3000',
-  ],
-  credentials: true,
-}));
-
+// CORS — allow all origins (fix for Render)
+app.use(cors());
 app.use(express.json());
+
+// Track DB connection state
+let dbConnected = false;
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', db: dbConnected ? 'connected' : 'disconnected' });
+});
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', db: dbConnected ? 'connected' : 'disconnected' });
+});
+
+// Middleware: block API calls until DB is ready
+app.use('/api', (req, res, next) => {
+  if (!dbConnected) {
+    return res.status(503).json({ message: 'Database is connecting, please wait 10 seconds and try again.' });
+  }
+  next();
+});
 
 // Routes Mounting
 app.use('/api', authRoutes);
 app.use('/api', expenseRoutes);
-
-// Health Check / Root route
-app.get('/', (req, res) => {
-  res.send('Personal Expense Tracker API is running...');
-});
 
 // Port and MongoDB setup
 const PORT = process.env.PORT || 5000;
@@ -47,6 +53,7 @@ console.log('Connecting to MongoDB...');
 mongoose
   .connect(MONGO_URI)
   .then(() => {
+    dbConnected = true;
     console.log('Successfully connected to MongoDB Database.');
   })
   .catch((err) => {
