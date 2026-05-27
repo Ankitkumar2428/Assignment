@@ -6,7 +6,7 @@ import Dashboard from './pages/Dashboard';
 
 // In production VITE_API_URL is set by render.yaml at build time.
 // Fallback to the known Render backend URL if the env var is missing.
-const RENDER_BACKEND = 'https://spendwise-backend.onrender.com';
+const RENDER_BACKEND = 'https://spendwise-backend-10zg.onrender.com';
 let rawUrl = import.meta.env.VITE_API_URL || RENDER_BACKEND;
 if (rawUrl && !rawUrl.startsWith('http')) {
   rawUrl = `https://${rawUrl}`;
