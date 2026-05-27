@@ -11,12 +11,20 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
   const [connectionColor, setConnectionColor] = useState('#f59e0b'); // orange
 
   React.useEffect(() => {
+    let active = true;
     const testConnection = async () => {
-      // Extract root backend URL from API_URL (replace /api with /health)
+      console.log("Status check: Starting fetch to backend...");
       const rootUrl = API_URL.replace(/\/api$/, '');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout for status badge
+      
       try {
-        const res = await fetch(`${rootUrl}/health`);
+        const res = await fetch(`${rootUrl}/health`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         const data = await res.json();
+        console.log("Status check success:", data);
+        if (!active) return;
+        
         if (data.status === 'ok' && data.db === 'connected') {
           setConnectionStatus('Backend Connected & Database Ready');
           setConnectionColor('#10b981'); // green
@@ -25,12 +33,22 @@ const Login = ({ onLoginSuccess, onNavigateToRegister, API_URL }) => {
           setConnectionColor('#ef4444'); // red
         }
       } catch (err) {
-        setConnectionStatus(`Connection Error: ${err.message || 'Cannot reach server'}`);
+        clearTimeout(timeoutId);
+        console.error("Status check failed:", err);
+        if (!active) return;
+        
+        if (err.name === 'AbortError') {
+          setConnectionStatus('Status Check: Request timed out');
+        } else {
+          setConnectionStatus(`Status Check: ${err.message || 'Cannot reach server'}`);
+        }
         setConnectionColor('#ef4444'); // red
       }
     };
     testConnection();
+    return () => { active = false; };
   }, [API_URL]);
+
 
 
   const handleSubmit = async (e) => {
