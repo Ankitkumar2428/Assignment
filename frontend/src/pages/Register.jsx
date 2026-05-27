@@ -31,7 +31,7 @@ const Register = ({ onNavigateToLogin, API_URL }) => {
 
     setLoading(true);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 50000);
     try {
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
